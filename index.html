@@ -312,7 +312,7 @@ body{background:var(--bg);font-family:'Nunito Sans',sans-serif;color:var(--text)
         <input type="file" accept=".csv,.xlsx,.xls,.pdf" onchange="handleFile(this.files[0])">
         <div class="dz-ico">📂</div>
         <div class="dz-txt" data-ru="Перетащите файл или нажмите для выбора" data-pt="Arraste o arquivo ou clique para selecionar">Arraste o arquivo ou clique para selecionar</div>
-        <div class="dz-hint" data-ru="CSV · XLSX · PDF · данные обрабатываются локально" data-pt="CSV · XLSX · PDF · dados processados localmente">CSV · XLSX · PDF · dados processados localmente</div>
+        <div class="dz-hint" data-ru="CSV · XLSX · PDF · анализ через API" data-pt="CSV · XLSX · PDF · análise via API">CSV · XLSX · PDF · análise via API</div>
       </div>
     </div>
 
@@ -642,16 +642,41 @@ function setLang(lang){
 }
 
 function handleDrop(e){e.preventDefault();document.getElementById('dz').classList.remove('drag');handleFile(e.dataTransfer.files[0]);}
-function handleFile(f){
+async function handleFile(f){
   if(!f)return;
-  const ext=(f.name.split('.').pop()||'').toLowerCase();
-  const types={xlsx:'vendas_ml',csv:f.name.toLowerCase().includes('nubank')?'extrato_nubank':f.name.toLowerCase().includes('c6')?'extrato_c6':f.name.toLowerCase().includes('mp')?'extrato_mp':'extrato',pdf:'extrato_c6_usd'};
-  const type=types[ext]||'arquivo';
-  document.getElementById('drFileType').textContent=type;
-  document.getElementById('drRows').textContent=Math.floor(Math.random()*600+200);
-  document.getElementById('drPeriod').textContent='Jan–Abr 2026';
-  document.getElementById('demoResults').classList.add('show');
   document.getElementById('dz').style.opacity='.5';
+  document.getElementById('drFileType').textContent='...';
+  document.getElementById('drRows').textContent='...';
+  document.getElementById('drPeriod').textContent='...';
+  document.getElementById('demoResults').classList.add('show');
+  // Clear old categories
+  const catsEl=document.querySelector('.result-cats');
+  if(catsEl)catsEl.innerHTML='<div style="font-size:11px;color:var(--text2)">Analisando...</div>';
+  try{
+    const fd=new FormData();
+    fd.append('file',f);
+    const res=await fetch('https://latamsellers-api-production.up.railway.app/analyze',{method:'POST',body:fd});
+    if(!res.ok)throw new Error('API error '+res.status);
+    const d=await res.json();
+    document.getElementById('drFileType').textContent=d.source_name||d.source_key||'Desconhecido';
+    document.getElementById('drRows').textContent=d.rows||0;
+    document.getElementById('drPeriod').textContent=d.period||'—';
+    if(catsEl&&d.top_categories&&d.top_categories.length){
+      const maxVal=Math.max(...d.top_categories.map(c=>c.value));
+      const colors=['var(--amber)','var(--blue)','var(--purple)','var(--green)','var(--red)'];
+      catsEl.innerHTML=d.top_categories.map((c,i)=>{
+        const pct=maxVal>0?Math.round(c.value/maxVal*100):0;
+        return '<div class="cat-row"><span style="font-size:10px;color:var(--text2);width:120px">'+c.category+'</span><div class="cat-bar"><div class="cat-fill" style="width:'+pct+'%;background:'+colors[i%5]+'"></div></div><span class="cat-val">R$ '+(c.value>=1000?(c.value/1000).toFixed(1)+'k':c.value.toFixed(0))+'</span></div>';
+      }).join('');
+    }else if(catsEl){
+      catsEl.innerHTML='<div style="font-size:11px;color:var(--text2)">Sem categorias detectadas</div>';
+    }
+  }catch(e){
+    document.getElementById('drFileType').textContent='Erro';
+    document.getElementById('drRows').textContent='—';
+    document.getElementById('drPeriod').textContent='—';
+    if(catsEl)catsEl.innerHTML='<div style="font-size:11px;color:var(--red)">'+e.message+'</div>';
+  }
 }
 function toggleFaq(el){el.classList.toggle('open');}
 function showReport(idx,btn){
