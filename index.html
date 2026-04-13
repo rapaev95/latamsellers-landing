@@ -661,12 +661,24 @@ async function handleFile(f){
     document.getElementById('drFileType').textContent=d.source_name||d.source_key||'Desconhecido';
     document.getElementById('drRows').textContent=d.rows||0;
     document.getElementById('drPeriod').textContent=d.period||'—';
-    if(catsEl&&d.top_categories&&d.top_categories.length){
+    function fmtBRL(v){if(v>=1000000)return'R$ '+(v/1000000).toFixed(1)+'M';if(v>=1000)return'R$ '+(v/1000).toFixed(1)+'k';return'R$ '+v.toFixed(0);}
+    if(d.opiu){
+      const o=d.opiu;
+      const opiu_html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'
+        +'<div style="background:var(--bg2);border-left:3px solid var(--green);border-radius:8px;padding:12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Receita Bruta</div><div style="font-size:18px;font-weight:800;color:var(--green)">'+fmtBRL(o.receita_bruta)+'</div></div>'
+        +'<div style="background:var(--bg2);border-left:3px solid var(--yellow);border-radius:8px;padding:12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Total NET</div><div style="font-size:18px;font-weight:800;color:var(--yellow)">'+fmtBRL(o.total_net)+'</div></div>'
+        +'<div style="background:var(--bg2);border-left:3px solid var(--red);border-radius:8px;padding:12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Tarifa de Venda</div><div style="font-size:14px;font-weight:700;color:var(--red)">−'+fmtBRL(o.tarifa_venda)+'</div></div>'
+        +'<div style="background:var(--bg2);border-left:3px solid var(--blue);border-radius:8px;padding:12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Tarifa de Envio</div><div style="font-size:14px;font-weight:700;color:var(--blue)">−'+fmtBRL(o.tarifa_envio)+'</div></div>'
+        +'<div style="background:var(--bg2);border-left:3px solid var(--purple);border-radius:8px;padding:12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Cancelamentos</div><div style="font-size:14px;font-weight:700;color:var(--purple)">−'+fmtBRL(o.cancelamentos)+'</div></div>'
+        +'<div style="background:var(--bg2);border-left:3px solid var(--amber);border-radius:8px;padding:12px"><div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px">Vendas</div><div style="font-size:14px;font-weight:700;color:var(--amber)">'+o.vendas_count+' <span style="font-size:10px;color:var(--text3)">('+o.ads_pct+'% ads)</span></div></div>'
+        +'</div>';
+      if(catsEl)catsEl.innerHTML=opiu_html;
+    }else if(catsEl&&d.top_categories&&d.top_categories.length){
       const maxVal=Math.max(...d.top_categories.map(c=>c.value));
       const colors=['var(--amber)','var(--blue)','var(--purple)','var(--green)','var(--red)'];
       catsEl.innerHTML=d.top_categories.map((c,i)=>{
         const pct=maxVal>0?Math.round(c.value/maxVal*100):0;
-        return '<div class="cat-row"><span style="font-size:10px;color:var(--text2);width:120px">'+c.category+'</span><div class="cat-bar"><div class="cat-fill" style="width:'+pct+'%;background:'+colors[i%5]+'"></div></div><span class="cat-val">R$ '+(c.value>=1000?(c.value/1000).toFixed(1)+'k':c.value.toFixed(0))+'</span></div>';
+        return '<div class="cat-row"><span style="font-size:10px;color:var(--text2);width:120px">'+c.category+'</span><div class="cat-bar"><div class="cat-fill" style="width:'+pct+'%;background:'+colors[i%5]+'"></div></div><span class="cat-val">'+fmtBRL(c.value)+'</span></div>';
       }).join('');
     }else if(catsEl){
       catsEl.innerHTML='<div style="font-size:11px;color:var(--text2)">Sem categorias detectadas</div>';
