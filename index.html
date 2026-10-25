@@ -610,6 +610,19 @@ table.dt{width:100%;border-collapse:collapse;font-size:11.5px}
 }
 /* иконки в списках одной ширины — иначе заголовки начинаются вразнобой */
 .feat .sq{flex:0 0 46px}
+
+/* Переключатель языка RU / PT */
+.langs{display:flex;gap:2px;padding:3px;border:1px solid var(--border);border-radius:10px;margin-left:auto;margin-right:12px}
+.langs a{padding:5px 9px;border-radius:7px;font-size:12px;font-weight:800;color:var(--text2);text-decoration:none;letter-spacing:.04em}
+.langs a.on{background:var(--yellow);color:#111}
+@media (max-width:640px){.langs{margin-right:6px}.langs a{padding:4px 7px}}
+/* PT: сетка стран Global Selling вместо карты Бразилии */
+.countries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:center}
+.countries .ct{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;gap:0 12px;align-items:center;background:linear-gradient(170deg,var(--card2),var(--card));border:1px solid var(--border);border-radius:14px;padding:14px 16px}
+.countries .fl{grid-row:1 / span 2;font-size:28px;line-height:1}
+.countries b{font-size:15.5px;font-weight:800}
+.countries small{font-size:12px;color:var(--text3)}
+.countries .ct:first-child{grid-column:1 / -1;border-color:var(--yellow)}
 </style>
 </head>
 <body>
@@ -679,6 +692,7 @@ table.dt{width:100%;border-collapse:collapse;font-size:11.5px}
           <a href="#price">Тарифы</a>
           <a href="#faq">Вопросы</a>
         </div>
+        <span class="langs"><a href="/" class="on" aria-current="page">RU</a><a href="/pt/">PT</a></span>
         <a class="btn btn-y btn-sm" data-cta="tg" href="#">Посчитать мой товар <svg class="i"><use href="#i-arrow"/></svg></a>
         <button class="burger" aria-label="Меню" aria-expanded="false"><svg class="i"><use href="#i-menu"/></svg></button>
       </nav>
